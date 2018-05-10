@@ -1,0 +1,38 @@
+
+To run custom pipelines, you’ll need read access to input files in a Cloud Storage bucket. You can transfer your own files with the storage browser or gsutil, or you can run on data that’s public or shared with you. To keep it simple, the example on this page uses public data.
+
+Create a pipeline
+Choose a Docker image
+The Pipelines API runs tools packaged as Docker images. You can reference any Docker image that's stored in Google Container Registry, Docker hub, as well as other public Docker repositories. And, of course, you can create your own Docker image if you don't find one ready-made.
+
+Define the pipeline
+Defining a pipeline to run from the command-line is intended to be easy, with a yaml or json file to define a pipeline job. As an example, let's run a tool called samtools that makes an index of a large binary file of DNA sequences (a BAM file). Using your favorite text editor, copy-paste this definition, and save it as samtools_index.yaml.
+
+name: samtools_index
+description: Run samtools index to generate a BAM index file
+inputParameters:
+- name: INPUT_FILE
+  localCopy:
+    disk: datadisk
+    path: input.bam
+outputParameters:
+- name: OUTPUT_FILE
+  localCopy:
+    disk: datadisk
+    path: input.bam.bai
+resources:
+  minimumCpuCores: 1
+  minimumRamGb: 1
+  zones:
+  - us-central1-a
+  - us-central1-b
+  - us-central1-c
+  - us-central1-f
+  disks:
+  - name: datadisk
+    type: PERSISTENT_HDD
+    sizeGb: 100
+    mountPoint: /mnt/data
+docker:
+  imageName: quay.io/cancercollaboratory/dockstore-tool-samtools-index
+  cmd: "samtools index ${INPUT_FILE}"
